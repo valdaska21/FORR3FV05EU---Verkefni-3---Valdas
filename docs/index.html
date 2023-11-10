@@ -7,15 +7,62 @@
 
   <!-- three.js -->
 <script src="https://unpkg.com/three@0.126.0/build/three.js"></script>
-
 <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr"></script>
 </head>
 <body>
 
 <!-- Starting an immersive WebXR session requires user interaction.
     We start this one with a simple button. -->
-<button onclick="activateXR()">Start Hello WebXR</button>
+<button onclick="activateXR()">Start WebXR</button>
+
+<video id="video" style="display: none;"></video>
+<canvas id="canvas" style="display: none;"></canvas>
+
 <script>
+// Function to handle QR code scanning
+function scanQR() {
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
+        
+        // Request access to the camera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    requestAnimationFrame(tick);
+                };
+            })
+            .catch(err => {
+                console.error("Access to the camera was denied:", err);
+            });
+
+        function tick() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                    if (code.data === 'your_specific_qr_code_data') {
+                        if (flower) {
+                            const clone = flower.clone();
+                            clone.position.copy(reticle.position);
+                            scene.add(clone);
+                        }
+                    }
+                }
+
+                requestAnimationFrame(tick);
+            }
+        }
+    }
+
+// Trigger the QR code scanning function when the XR session is activated
+
+
 async function activateXR() {
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
@@ -60,6 +107,8 @@ async function activateXR() {
   // A 'local' reference space has a native origin that is located
   // near the viewer's position at the time the session was created.
   const referenceSpace = await session.requestReferenceSpace('local');
+
+  scanQR();
 
   // Create another XRReferenceSpace that has the viewer as the origin.
   const viewerSpace = await session.requestReferenceSpace('viewer');
