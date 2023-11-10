@@ -46,7 +46,7 @@ function scanQR() {
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 
                 if (code) {
-                    if (code.data === 'your_specific_qr_code_data') {
+                    if (code.data === 'https://inna.is/') {
                         if (flower) {
                             const clone = flower.clone();
                             clone.position.copy(reticle.position);
