@@ -2,8 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <title>Hello WebXR!</title>
 
   <!-- three.js -->
@@ -18,10 +17,10 @@
 <button onclick="activateXR()">Start Hello WebXR</button>
 <script>
 async function activateXR() {
-  // Add a canvas element and initialize a WebGL context that is compatible with WebXR.
-  const canvas = document.createElement("canvas");
+  const canvas = document.getElementById("xrCanvas") || document.createElement("canvas");
+  canvas.id = "xrCanvas";
   document.body.appendChild(canvas);
-  const gl = canvas.getContext("webgl", {xrCompatible: true});
+  const gl = canvas.getContext("webgl", { xrCompatible: true });
 
   // To be continued in upcoming steps.
   
@@ -38,6 +37,19 @@ async function activateXR() {
     canvas: canvas,
     context: gl
   });
+
+  async function requestFullScreen() {
+    if (document.body.requestFullscreen) {
+      await document.body.requestFullscreen();
+    } else if (document.body.mozRequestFullScreen) {
+      await document.body.mozRequestFullScreen();
+    } else if (document.body.webkitRequestFullscreen) {
+      await document.body.webkitRequestFullscreen();
+    } else if (document.body.msRequestFullscreen) {
+      await document.body.msRequestFullscreen();
+    }
+  }
+
   renderer.autoClear = false;
 
   // The API directly updates the camera matrices.
@@ -119,7 +131,19 @@ const onXRFrame = (time, frame) => {
   }
 }
 session.requestAnimationFrame(onXRFrame);
+
+try {
+    await requestFullScreen();
+    // Continue with AR setup
+    // ... (existing AR setup code)
+  } catch (error) {
+    console.error("Error entering full-screen mode:", error);
+    // Handle errors, fallback or provide user feedback
+  }
 }
+
 </script>
+<canvas id="xrCanvas"></canvas>
+
 </body>
 </html>
