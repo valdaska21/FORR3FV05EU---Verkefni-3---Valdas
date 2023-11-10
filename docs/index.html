@@ -20,6 +20,9 @@
 <canvas id="canvas" style="display: none;"></canvas>
 
 <script>
+
+let scene, flower, reticle;
+
 // Function to handle QR code scanning
 function scanQR() {
         const video = document.getElementById("video");
@@ -116,14 +119,12 @@ async function activateXR() {
   const hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
 
   const loader = new THREE.GLTFLoader();
-  let reticle;
   loader.load("https://immersive-web.github.io/webxr-samples/media/gltf/reticle/reticle.gltf", function(gltf) {
     reticle = gltf.scene;
     reticle.visible = false;
     scene.add(reticle);
   })
 
-  let flower;
   loader.load("https://immersive-web.github.io/webxr-samples/media/gltf/sunflower/sunflower.gltf", function(gltf) {
     flower = gltf.scene;
   });
@@ -137,7 +138,7 @@ async function activateXR() {
 });
 
   // Create a render loop that allows us to draw on the AR view.
-const onXRFrame = (time, frame) => {
+  const onXRFrame = (time, frame) => {
   // Queue up the next draw request.
   session.requestAnimationFrame(onXRFrame);
 
