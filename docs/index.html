@@ -57,12 +57,6 @@ async function activateXR() {
     // Initialize a WebXR session using "immersive-ar".
     const session = await navigator.xr.requestSession("immersive-ar", {requiredFeatures: ['hit-test']});
     
-    // Get the camera stream and set it as the source for jsQR
-    const mediaStream = await navigator.mediaDevices.getUserMedia({ camera: true });
-      videoInput.srcObject = mediaStream;
-      videoElement = videoInput;
-    //--
-
   session.updateRenderState({
     baseLayer: new XRWebGLLayer(session, gl)
   });
