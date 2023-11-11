@@ -9,6 +9,7 @@
 <script src="https://unpkg.com/three@0.126.0/build/three.js"></script>
 <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.0/dist/jsQR.min.js"></script>
+<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 </head>
 <body>
 
@@ -18,22 +19,6 @@
 
 <script>
 let scene, flower, reticle;
-
-// Scan for QR codes
-function scanQR() {
-    const imageData = getImageData(camera);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code) {
-        if (code.data === 'https://inna.is') {
-            // When the specific QR code is found, load and position the 3D model
-            if (flower) {
-                const clone = flower.clone();
-                clone.position.copy(reticle.position); // Position the 3D model at the detected QR code
-                scene.add(clone); // Add the 3D model to the scene
-            }
-        }
-    }
-}
 
 async function activateXR() {
   const canvas = document.createElement("canvas");
@@ -103,33 +88,12 @@ async function activateXR() {
   }
 });
 
-// Scan QR codes every animation frame
-function scanQR() {
-    const imageData = getImageData(camera);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code) {
-    if (code.data === 'https://inna.is') {
-    //console.log('Found specific QR code!');
-
-
-
-    model.setAttribute('gltf-model', 'url(https://example.com/your-model.gltf)');
-    model.setAttribute('scale', '0.05 0.05 0.05');
-
-    // Add the model to the scene
-    var scene = document.querySelector('a-scene');
-    scene.appendChild(model);
-  }
-}
-}
 //requestAnimationFrame(scanQR);
 
   // Create a render loop that allows us to draw on the AR view.
   const onXRFrame = (time, frame) => {
   // Queue up the next draw request.
   session.requestAnimationFrame(onXRFrame);
-
-  scanQR();
 
   // Bind the graphics framebuffer to the baseLayer's framebuffer
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
@@ -161,7 +125,6 @@ function scanQR() {
     renderer.render(scene, camera)
   }
 }
-session.requestAnimationFrame(scanQR);
 session.requestAnimationFrame(onXRFrame);
 }
 </script>
