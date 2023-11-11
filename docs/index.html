@@ -20,9 +20,6 @@
 <script>
 let scene, flower, reticle, shiba;
 
-
-
-
 async function activateXR() {
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
@@ -94,7 +91,7 @@ async function activateXR() {
   }
   });
   
-  let scanner = new Instascan.Scanner({ video: document.getElementById('canvas') });
+  let scanner = new Instascan.Scanner({ video: document.getElementsByClassName('canvas') });
 
   scanner.addListener('scan', function (content) {
     const clone = shiba.clone();
