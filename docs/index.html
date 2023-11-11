@@ -55,17 +55,10 @@ async function activateXR() {
   camera.matrixAutoUpdate = false;
 
     // Initialize a WebXR session using "immersive-ar".
-    const session = await navigator.xr.requestSession("immersive-ar", {requiredFeatures: ['hit-test', 'dom-overlay']});
+    const session = await navigator.xr.requestSession("immersive-ar", {requiredFeatures: ['hit-test']});
     
-    //--
-    const videoInput = document.createElement('video');
-      videoInput.setAttribute('playsinline', '');
-      videoInput.setAttribute('autoplay', '');
-      videoInput.setAttribute('muted', '');
-      videoInput.style.display = 'none';
-    //--
     // Get the camera stream and set it as the source for jsQR
-    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const mediaStream = await navigator.mediaDevices.getUserMedia({ camera: true });
       videoInput.srcObject = mediaStream;
       videoElement = videoInput;
     //--
@@ -136,7 +129,7 @@ async function activateXR() {
             scene.add(shibaClone);
           }
         }
-        
+
   // Retrieve the pose of the device.
   // XRFrame.getViewerPose can return null while the session attempts to establish tracking.
   const pose = frame.getViewerPose(referenceSpace);
