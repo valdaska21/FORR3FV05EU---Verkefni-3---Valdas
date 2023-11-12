@@ -101,7 +101,7 @@ async function activateXR() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
 
   // Check for QR codes in the camera feed
-        const canvasContext = canvasElement.getContext('2d');
+        const canvasContext = canvas.getContext('2d');
         canvasElement.width = videoElement.videoWidth;
         canvasElement.height = videoElement.videoHeight;
         canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
