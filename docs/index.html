@@ -17,8 +17,7 @@
 <button onclick="activateXR()">Start WebXR</button>
 
 <script>
-let scene, flower, reticle, shiba;
-let videoElement;
+let scene, flower, reticle, shiba, videoElement, canvasElement;
 
 
 async function activateXR() {
@@ -109,7 +108,6 @@ async function activateXR() {
         
         const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-
         if (code) {
           // A QR code is detected
           const detectedQRPosition = hitTestResults[0].getPose(referenceSpace).transform.position;
