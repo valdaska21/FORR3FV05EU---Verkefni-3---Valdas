@@ -9,6 +9,7 @@
   <!-- three.js -->
 <script src="https://unpkg.com/three@0.126.0/build/three.js"></script>
 <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.0/dist/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -73,6 +74,12 @@ let flower;
 loader.load("https://immersive-web.github.io/webxr-samples/media/gltf/sunflower/sunflower.gltf", function(gltf) {
   flower = gltf.scene;
 });
+
+let shiba;
+loader.load("https://valdaska21.github.io/FORR3FV05EU---Verkefni-3---Valdas/docs/scene.gltf", function(gltf) {
+    shiba = gltf.scene;
+  });
+
 
 session.addEventListener("select", (event) => {
   if (flower) {
