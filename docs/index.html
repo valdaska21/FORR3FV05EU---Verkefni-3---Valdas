@@ -26,13 +26,9 @@ async function activateXR() {
   canvas.height = window.innerHeight;
   document.body.appendChild(canvas);
   canvas.id = 'cameraCanvas';
-
   const cameraCanvas = document.getElementById('cameraCanvas');
 
-  // Add a canvas element and initialize a WebGL context that is compatible with WebXR.
   const gl = canvas.getContext("webgl", {xrCompatible: true});
-
-  // To be continued in upcoming steps.
   const scene = new THREE.Scene();
 
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
@@ -95,29 +91,29 @@ async function activateXR() {
   }
   });
 
-  // Create a render loop that allows us to draw on the AR view.
+ 
   const onXRFrame = (time, frame) => {
     session.requestAnimationFrame(onXRFrame);
-  // Bind the graphics framebuffer to the baseLayer's framebuffer
+  
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
 
   // Check for QR codes in the camera feed
         const canvasContext = cameraCanvas.getContext('2d');
+        const videoElement = document.createElement('video');
+
         canvasElement.width = videoElement.videoWidth;
         canvasElement.height = videoElement.videoHeight;
         canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-        
         const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-        if (code) {
-          // A QR code is detected
-          const detectedQRPosition = hitTestResults[0].getPose(referenceSpace).transform.position;
-          if (shiba) {
+        
+        const hitTestResults = frame.getHitTestResults(hitTestSource);
+        if (hitTestResults.length > 0) {
+          const hitPose = hitTestResults[0].getPose(referenceSpace);
+          if (code && shiba) {
+            const detectedQRPosition = hitPose.transform.position;
             const shibaClone = shiba.clone();
             shibaClone.position.set(detectedQRPosition.x, detectedQRPosition.y, detectedQRPosition.z);
-            // Adjust rotation and scale as needed
-            // shibaClone.rotation.set(0, Math.PI, 0); // Example rotation (if needed)
-            // shibaClone.scale.set(0.5, 0.5, 0.5); // Example scale (if needed)
             scene.add(shibaClone);
           }
         }
