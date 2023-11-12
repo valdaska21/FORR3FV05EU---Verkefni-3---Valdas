@@ -25,8 +25,6 @@ async function activateXR() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   document.body.appendChild(canvas);
-  canvas.id = 'cameraCanvas';
-  const cameraCanvas = document.getElementById('cameraCanvas');
 
   const gl = canvas.getContext("webgl", {xrCompatible: true});
   const scene = new THREE.Scene();
@@ -97,26 +95,6 @@ async function activateXR() {
   
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
 
-  // Check for QR codes in the camera feed
-        const canvasContext = cameraCanvas.getContext('2d');
-        const videoElement = document.createElement('video');
-
-        canvasElement.width = videoElement.videoWidth;
-        canvasElement.height = videoElement.videoHeight;
-        canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-        const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-        
-        const hitTestResults = frame.getHitTestResults(hitTestSource);
-        if (hitTestResults.length > 0) {
-          const hitPose = hitTestResults[0].getPose(referenceSpace);
-          if (code && shiba) {
-            const detectedQRPosition = hitPose.transform.position;
-            const shibaClone = shiba.clone();
-            shibaClone.position.set(detectedQRPosition.x, detectedQRPosition.y, detectedQRPosition.z);
-            scene.add(shibaClone);
-          }
-        }
 
   // Retrieve the pose of the device.
   // XRFrame.getViewerPose can return null while the session attempts to establish tracking.
