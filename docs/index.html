@@ -1,151 +1,158 @@
-Here is the full code that you can use to make the camera read QR codes and deploy a 3D object on top of the read QR codes:
-
-```javascript
-<!DOCTYPE html>
+<!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Hello WebXR!</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-      canvas {
-        width: 100%;
-        height: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@2.0.1/dist/jsQR.min.js"></script>
-    <script>
-      // Create a new scene
-      const scene = new THREE.Scene();
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <title>Hello WebXR!</title>
 
-      // Create a new camera
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
+  <!-- three.js -->
+<script src="https://unpkg.com/three@0.126.0/build/three.js"></script>
+<script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.0/dist/jsQR.min.js"></script>
+</head>
+<body>
 
-      // Create a new renderer
-      const renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+<!-- Starting an immersive WebXR session requires user interaction.
+    We start this one with a simple button. -->
+<button onclick="activateXR()">Start WebXR</button>
 
-      // Create a new video element
-      const video = document.createElement("video");
-      video.autoplay = true;
-      video.playsinline = true;
-      video.muted = true;
+<script>
+let scene, flower, reticle, shiba;
 
-      // Create a new canvas element
-      const canvas = document.createElement("canvas");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const context = canvas.getContext("2d");
 
-      // Create a new VideoTexture object
-      const videoTexture = new THREE.VideoTexture(video);
+async function activateXR() {
+  const canvas = document.createElement("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  canvas.id = 'cameraCanvas';
 
-      // Create a new plane geometry
-      const planeGeometry = new THREE.PlaneGeometry(16, 9);
+  const cameraCanvas = document.getElementById('cameraCanvas');
 
-      // Create a new material with the video texture
-      const planeMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+  // Add a canvas element and initialize a WebGL context that is compatible with WebXR.
+  const gl = canvas.getContext("webgl", {xrCompatible: true});
 
-      // Create a new mesh with the plane geometry and material
-      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+  // To be continued in upcoming steps.
+  const scene = new THREE.Scene();
 
-      // Add the mesh to the scene
-      scene.add(plane);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
+  directionalLight.position.set(10, 15, 10);
+  scene.add(directionalLight);
 
-      // Create a new ambient light
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Set up the WebGLRenderer, which handles rendering to the session's base layer.
+  const renderer = new THREE.WebGLRenderer({
+    alpha: true,
+    preserveDrawingBuffer: true,
+    canvas: canvas,
+    context: gl
+  });
+  renderer.autoClear = false;
 
-      // Add the ambient light to the scene
-      scene.add(ambientLight);
+  
 
-      // Create a new directional light
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  // The API directly updates the camera matrices.
+  // Disable matrix auto updates so three.js doesn't attempt
+  // to handle the matrices independently.
+  const camera = new THREE.PerspectiveCamera();
+  camera.matrixAutoUpdate = false;
 
-      // Set the position of the directional light
-      directionalLight.position.set(0, 1, 1);
+    // Initialize a WebXR session using "immersive-ar".
+    const session = await navigator.xr.requestSession("immersive-ar", {requiredFeatures: ['hit-test']});
+    
+  session.updateRenderState({
+    baseLayer: new XRWebGLLayer(session, gl)
+  });
 
-      // Add the directional light to the scene
-      scene.add(directionalLight);
+  // A 'local' reference space has a native origin that is located
+  // near the viewer's position at the time the session was created.
+  const referenceSpace = await session.requestReferenceSpace('local');
 
-      // Create a new box geometry
-      const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+  // Create another XRReferenceSpace that has the viewer as the origin.
+  const viewerSpace = await session.requestReferenceSpace('viewer');
+  // Perform hit testing using the viewer as origin.
+  const hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
 
-      // Create a new material for the box
-      const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const loader = new THREE.GLTFLoader();
+  loader.load("https://immersive-web.github.io/webxr-samples/media/gltf/reticle/reticle.gltf", function(gltf) {
+    reticle = gltf.scene;
+    reticle.visible = false;
+    scene.add(reticle);
+  });
 
-      // Create a new mesh with the box geometry and material
-      const box = new THREE.Mesh(boxGeometry, boxMaterial);
+  loader.load("https://immersive-web.github.io/webxr-samples/media/gltf/sunflower/sunflower.gltf", function(gltf) {
+    flower = gltf.scene;
+  });
 
-      // Add the mesh to the scene
-      scene.add(box);
+  loader.load("https://valdaska21.github.io/FORR3FV05EU---Verkefni-3---Valdas/docs/scene.gltf", function(gltf) {
+    shiba = gltf.scene;
+  });
 
-      // Set the position of the camera
-      camera.position.z = 5;
+  session.addEventListener("select", (event) => {
+  if (flower) {
+    const clone = flower.clone();
+    clone.position.copy(reticle.position);
+    scene.add(clone);
+  }
+  });
 
-      // Create a new QR code reader
-      const qrReader = new window.QRCodeReader();
+  // Create a render loop that allows us to draw on the AR view.
+  const onXRFrame = (time, frame) => {
+  // Queue up the next draw request.
+  session.requestAnimationFrame(onXRFrame);
 
-      // Create a new function to render the scene
-      function render() {
-        requestAnimationFrame(render);
+  // Bind the graphics framebuffer to the baseLayer's framebuffer
+  gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
 
-        // Draw the video frame to the canvas
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Decode the QR code from the camera feed
-        const imageData = context.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        const code = qrReader.decode(imageData.data, imageData.width, imageData.height);
-
-        // If a QR code was detected, display the box at the position of the QR code
+  // Check for QR codes in the camera feed
+        const canvasContext = cameraCanvas.getContext('2d');
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+        canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+        
+        const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
         if (code) {
-          box.visible = true;
-          box.position.copy(code.position);
-          box.quaternion.copy(code.quaternion);
-        } else {
-          box.visible = false;
+          // A QR code is detected
+          const detectedQRPosition = hitTestResults[0].getPose(referenceSpace).transform.position;
+          if (shiba) {
+            const shibaClone = shiba.clone();
+            shibaClone.position.set(detectedQRPosition.x, detectedQRPosition.y, detectedQRPosition.z);
+            // Adjust rotation and scale as needed
+            // shibaClone.rotation.set(0, Math.PI, 0); // Example rotation (if needed)
+            // shibaClone.scale.set(0.5, 0.5, 0.5); // Example scale (if needed)
+            scene.add(shibaClone);
+          }
         }
 
-        // Update the video texture
-        videoTexture.needsUpdate = true;
+  // Retrieve the pose of the device.
+  // XRFrame.getViewerPose can return null while the session attempts to establish tracking.
+  const pose = frame.getViewerPose(referenceSpace);
+  if (pose) {
+    // In mobile AR, we only have one view.
+    const view = pose.views[0];
 
-        // Render the scene
-        renderer.render(scene, camera);
-      }
+    const viewport = session.renderState.baseLayer.getViewport(view);
+    renderer.setSize(viewport.width, viewport.height)
 
-      // Start the rendering loop
-      render();
+    // Use the view's transform matrix and projection matrix to configure the THREE.camera.
+    camera.matrix.fromArray(view.transform.matrix)
+    camera.projectionMatrix.fromArray(view.projectionMatrix);
+    camera.updateMatrixWorld(true);
 
-      // Get the user's media stream
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          // Set the video source to the user's media stream
-          video.srcObject = stream;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    </script>
-  </body>
+    const hitTestResults = frame.getHitTestResults(hitTestSource);
+    if (hitTestResults.length > 0 && reticle) {
+      const hitPose = hitTestResults[0].getPose(referenceSpace);
+      reticle.visible = true;
+      reticle.position.set(hitPose.transform.position.x, hitPose.transform.position.y, hitPose.transform.position.z)
+      reticle.updateMatrixWorld(true);
+    }
+
+    // Render the scene with THREE.WebGLRenderer.
+    renderer.render(scene, camera)
+  }
+}
+session.requestAnimationFrame(onXRFrame);
+}
+</script>
+</body>
 </html>
-```
-
-Please note that this code is based on the guide you have completed at  and modified to fit your specific use case. You will need to modify it further to
